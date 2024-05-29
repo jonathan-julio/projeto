@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>workspace</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="Webflow" name="generator">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        .footer-subscribe {
+            background-color: #f8f9fa;
+        }
+
+        #ADMIN {
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body class="body">
+    <div class="content">
+        <div class="navbar-logo-left">
+            <nav class="navbar navbar-expand-md navbar-light bg-light shadow-sm">
+                <div class="container">
+                    <a class="navbar-brand" href="#">
+                        <img src="https://assets-global.website-files.com/62434fa732124a0fb112aab4/62434fa732124a332512aaee_placeholder-1.svg"
+                            loading="lazy" alt="">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item"><a class="nav-link" href="/user/workspace/">Inicio</a></li>
+                            <li id="ADMIN" class="nav-item"><a class="nav-link" href="#">Adminitrador</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">Personalizar</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">Perfil</a></li>
+                            <li class="nav-item"><a class="btn btn-info ml-3"  href="/">Sair</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <aside class="gallery-overview">
+            <div class="container pt-5 pb-5">
+                <div class="row">
+                    <div class="col-lg-4 p-5 ">
+                        <div class="card-0">
+                            <h3>Suas Publicações</h3>
+                            <p>Ao lado esta uma breve vizualização das suas postagem. Clique para Visualizar ou editar.
+                            </p>
+
+                            <a href="/post/creater/" class="btn btn-primary ">Nova Postagem</a>
+                        </div>
+                    </div>
+                    <div class="col d-flex flex-wrap" id="posts-container">
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <footer class="footer-subscribe bg-light py-4">
+        <div class="container">
+            <div class="mt-4 border-top pt-3">
+                <div class="row">
+                    <div class="col-md-6">© 2022 Company name. All rights reserved</div>
+                    <div class="col-md-6 text-md-right">
+                        <a href="#" class="text-dark">Terms Of Use</a> |
+                        <a href="#" class="text-dark">Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function isAdmin(admin) {
+            if (admin == "ADMIN") {
+                var elemento = document.getElementById("ADMIN");
+                elemento.style.display = "inline";
+            }
+        }
+
+
+        async function getInforUser() {
+            const host = 'http://localhost:8080/';
+            const url = host + 'api/usuarios/login=' + sessionStorage.login;
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                else {
+                    const data = await response.json();
+                    isAdmin(data.admin)
+                    console.log(data.posts)
+
+                    var postsContainer = document.getElementById("posts-container");
+
+                    // Limpa o conteúdo atual do container de posts
+                    postsContainer.innerHTML = "";
+
+                    // Verifica se há posts na lista
+                    if (data.posts.length === 0) {
+                        // Se não houver posts, exibe uma mensagem informando que não há posts disponíveis
+                        postsContainer.innerHTML = "<p>Nenhum post disponível.</p>";
+                    } else {
+                        // Se houver posts, itera sobre a lista de posts e cria elementos HTML correspondentes
+                        data.posts.forEach(function (post) {
+                            var postHtml = `
+                                <div class="col-sm-6 p-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <img class="col pb-2" src="https://cdn.pixabay.com/photo/2024/02/26/19/39/monochrome-image-8598798_640.jpg">
+                                            <h5 class="card-title">${post.titulo}</h5>
+                                            <p class="card-text">${post.descricao}</p>
+                                            <a href="#" onclick='editPost(${post.id})' class="btn btn-primary">Ver mais</a>
+                                            <a href="/post/edit=${post.id}" class="btn btn-danger">Editar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            postsContainer.innerHTML += postHtml;
+                        });
+                    }
+
+                }
+            } catch (error) {
+                console.error('There has been a problem with your fetch operation:', error);
+
+            }
+        }
+        getInforUser();
+    </script>
+    <script>
+        function editPost(id){
+            localStorage.editPost = id;
+            window.location.href = '/post/editar';
+        }
+    </script>
+</body>
+
+</html>
